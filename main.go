@@ -1,38 +1,37 @@
 package main
 
 import (
-	"github.com/influxdata/influxdb/client/v2"
 	"log"
 	"time"
+
+	"github.com/influxdata/influxdb/client/v2"
 
 	"meter"
 
 	"gopkg.in/alecthomas/kingpin.v2"
-
 )
 
 const (
-	MyDB = "office_environment"
+	MyDB     = "office_environment"
 	username = ""
 	password = ""
-	)
+)
 
 var (
-	device     = kingpin.Arg("device", "CO2 Meter device, such as /dev/hidraw2").Required().String()
+	device    = kingpin.Arg("device", "CO2 Meter device, such as /dev/hidraw2").Required().String()
 	influxUrl = kingpin.Arg("influx-url", "The address and port of the influx server - localhost:8088").String()
-	influxDb = kingpin.Arg("influx-db", "The influxdb database. e.g. primary_db").
-			Default("http://localhost:8088").String()
+	influxDb  = kingpin.Arg("influx-db", "The influxdb database. e.g. primary_db").Default("http://localhost:8088").String()
 )
 
 func main() {
 
 	//send_point()
 	kingpin.Parse()
-//	fmt.Printf("%v\n", measure())
-	client := create_influx_client(influxUrl,influxDb,"","")
+	//	fmt.Printf("%v\n", measure())
+	client := create_influx_client(influxUrl, influxDb, "", "")
 	for {
 		co2, temp := measure()
-		send_points(client,co2,temp)
+		send_points(client, co2, temp)
 		time.Sleep(60000 * time.Millisecond)
 	}
 }
@@ -65,7 +64,7 @@ func send_points(c client.Client, co2_level int, temp float64) {
 	tags := map[string]string{"location": "lon-office"}
 	fields := map[string]interface{}{
 		"ppm":  co2_level,
-		"temp":  temp,
+		"temp": temp,
 	}
 
 	pt1, err := client.NewPoint("levels", tags, fields, time.Now())
